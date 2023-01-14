@@ -2,24 +2,17 @@
 #include <fstream>
 #include <filesystem>
 #include <vector>
-#include <wrl/client.h>
-#include <d3d11.h>
+#include "Bindable.h"
+#include <tuple>
 
-
-namespace
-{
-	class Bindable;
-	template<class T>
-	class shader_gfx : protected Bindable{
-		Microsoft::WRL::ComPtr<T> s;
-	};
-}
 
 template <class T>
-class Shader
+concept shader_type = std::same_as<T, ID3D11VertexShader> || std::same_as<T, ID3D11PixelShader>;
+template <shader_type T>
+class Shader : public Bindable
 {
-	shader_gfx pShader;
-	//Microsoft::WRL::ComPtr<T> s;
+
+	Microsoft::WRL::ComPtr<T> shader;
 	std::vector<char> byteCode;
 	std::size_t size;
 
@@ -37,13 +30,27 @@ private:
 	Shader(const Shader&) = delete;
 
 public:
-	Shader(const std::string& fileName)
-		:byteCode(size = std::filesystem::file_size(fileName))  //dang how cool is this
+	Shader(const std::string& fileName,Graphics& g)
+		:
+		Bindable(g),
+		byteCode(size = std::filesystem::file_size(fileName))  //dang how cool is this
 	{
 		readShader(fileName);
+		auto arguments = std::make_tuple(gfx.pDevice.Get(), byteCode.data(), size, nullptr, shader.GetAddressOf());
+		if constexpr (std::same_as<T, ID3D11VertexShader>)
+		{
+			std::apply(&ID3D11Device::CreateVertexShader, arguments); // callable object, arguments for it
+			//gfx.pDevice->CreateVertexShader(byteCode.data(), size, nullptr, shader.GetAddressOf());
+		}
+		else if constexpr (std::same_as<T, ID3D11PixelShader>)
+		{
+			std::apply(&ID3D11Device::CreatePixelShader, arguments);
+			//gfx.pDevice->CreatePixelShader(byteCode.data(), size, nullptr, shader.GetAddressOf());
+		}
+
 	};
 
-	void* data()
+	auto data() const
 	{
 		return byteCode.data();
 	};
@@ -55,7 +62,22 @@ public:
 
 	auto operator&() { return &shader; }
 
-	const std::size_t& getSize() { return size; };
+	const std::size_t& getSize() const { return size; };
+	
+	void bind() override 
+	{
+		if constexpr (std::same_as<T, ID3D11VertexShader>)
+		{
+			gfx.pDeviceContext->VSSetShader(shader.Get(), nullptr, 0);
 
+		}
+		else if constexpr (std::same_as<T, ID3D11PixelShader>)
+		{
+			gfx.pDeviceContext->PSSetShader(shader.Get(), nullptr, 0);
+		}
+
+			
+	}
+	
 
 };

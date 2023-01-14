@@ -4,11 +4,14 @@
 #pragma comment(lib,"D3D11.lib")
 #include "Shader.h"
 #include <filesystem>
+#include "VertexBuffer.h"
+#include "Drawable.h"
+#include "InputLayout.h"
 Graphics::Graphics(const Window& w)
 {
 	DXGI_SWAP_CHAIN_DESC scd = {};
 
-	scd.BufferDesc = { 0,0, {0,0}, DXGI_FORMAT_R8G8B8A8_UNORM,DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED,DXGI_MODE_SCALING_UNSPECIFIED };
+	scd.BufferDesc = { 0,0, {0,0}, DXGI_FORMAT_R8G8B8A8_UNORM_SRGB,DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED,DXGI_MODE_SCALING_UNSPECIFIED };
 	scd.SampleDesc = { 1,0 };
 	scd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
 	scd.Windowed = TRUE;
@@ -80,6 +83,16 @@ void Graphics::drawTriangle()
 		{0.5,-0.5,0.5,0,0,1},
 		{0,-0.5,-0.5,1,0,1},
 	};
+
+	Drawable triangle(*this);
+	
+	//VertexBuffer<Vertex> v(std::move(vertices),*this);
+	
+	triangle.addBind(std::make_unique<VertexBuffer<Vertex>>(std::move(vertices), *this));
+	//v.bind();
+
+
+
 	D3D11_BUFFER_DESC bdc{};
 	bdc.ByteWidth = static_cast<UINT>(vertices.size() * sizeof(Vertex));
 	bdc.Usage = D3D11_USAGE_DEFAULT;
@@ -90,13 +103,13 @@ void Graphics::drawTriangle()
 	D3D11_SUBRESOURCE_DATA sdat{};
 	sdat.pSysMem = vertices.data();
 	sdat.SysMemPitch = sizeof(Vertex);
-	auto res = pDevice->CreateBuffer(&bdc,&sdat,&vBuf);
+	//auto res = pDevice->CreateBuffer(&bdc,&sdat,&vBuf);
 
 
 	constexpr UINT stride = sizeof(Vertex);
 	constexpr UINT offset = 0;
-	pDeviceContext->IASetVertexBuffers(0, 1, vBuf.GetAddressOf(), &stride, &offset);
-
+	//pDeviceContext->IASetVertexBuffers(0, 1, vBuf.GetAddressOf(), &stride, &offset);
+	
 
 	wrl::ComPtr<ID3D11Buffer> iBuf;
 	std::vector<int> indices =
@@ -115,17 +128,30 @@ void Graphics::drawTriangle()
 
 	sdat.pSysMem = indices.data();
 	sdat.SysMemPitch = sizeof(int);
-	res = pDevice->CreateBuffer(&bdc, &sdat, &iBuf);
+	auto res = pDevice->CreateBuffer(&bdc, &sdat, &iBuf);
 	pDeviceContext->IASetIndexBuffer(iBuf.Get(), DXGI_FORMAT_R32_UINT, 0);
-	auto r = std::filesystem::current_path();
-	Shader<ID3D11VertexShader> vertexShader("..\\x64\\Debug\\VertexShader.cso");
-	Shader<ID3D11PixelShader> pixelShader("..\\x64\\Debug\\PixelShader.cso");
-	res = pDevice->CreateVertexShader(vertexShader.data(), vertexShader.getSize(), nullptr, &vertexShader);
+
+	triangle.addBind(std::make_unique<Shader<ID3D11VertexShader>>("..\\x64\\Debug\\VertexShader.cso", *this));
+	triangle.addBind(std::make_unique<Shader<ID3D11PixelShader>>("..\\x64\\Debug\\PixelShader.cso", *this));
+	auto sh = std::make_unique<Shader<ID3D11VertexShader>>("..\\x64\\Debug\\VertexShader.cso", *this);
+
+	const std::vector<D3D11_INPUT_ELEMENT_DESC> idc =  // tell vshader what is in vertex buffer ?? ???  ? ?
+	{
+		{"POSITION",0,DXGI_FORMAT_R32G32B32_FLOAT,0,0,D3D11_INPUT_PER_VERTEX_DATA,0},
+		{"COLOR",0,DXGI_FORMAT_R32G32B32_FLOAT,0,D3D11_APPEND_ALIGNED_ELEMENT,D3D11_INPUT_PER_VERTEX_DATA,0}
+	};
+	auto layout = std::make_unique<InputLayout>(idc, *sh, *this);
+	triangle.addBind(std::move(layout));
+	/*
+	Shader<ID3D11VertexShader> vertexShader ("..\\x64\\Debug\\VertexShader.cso",*this);
+	Shader<ID3D11PixelShader> pixelShader("..\\x64\\Debug\\PixelShader.cso",*this);
+	//res = pDevice->CreateVertexShader(vertexShader.data(), vertexShader.getSize(), nullptr, &vertexShader);
+
 	pDeviceContext->VSSetShader(vertexShader.Get(), nullptr, 0);
 
-	res = pDevice->CreatePixelShader(pixelShader.data(), pixelShader.getSize(), nullptr, &pixelShader);
+	//res = pDevice->CreatePixelShader(pixelShader.data(), pixelShader.getSize(), nullptr, &pixelShader);
 	pDeviceContext->PSSetShader(pixelShader.Get(), nullptr, 0);
-
+	
 	const D3D11_INPUT_ELEMENT_DESC idc[] =  // tell vshader what is in vertex buffer ?? ???  ? ?
 	{
 		{"POSITION",0,DXGI_FORMAT_R32G32B32_FLOAT,0,0,D3D11_INPUT_PER_VERTEX_DATA,0},
@@ -134,7 +160,8 @@ void Graphics::drawTriangle()
 	wrl::ComPtr<ID3D11InputLayout> inputLayout;
 	res = pDevice->CreateInputLayout(idc, 2, vertexShader.data(), vertexShader.getSize(), &inputLayout);
 	pDeviceContext->IASetInputLayout(inputLayout.Get());
-
+	*/
+	triangle.draw();
 	pDeviceContext->DrawIndexed((UINT)indices.size(), 0, 0);
 
 }
