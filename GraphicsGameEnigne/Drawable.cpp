@@ -2,7 +2,7 @@
 
 Drawable::Drawable(Graphics& g) : GraphicsObject(g)
 {
-
+	//huh??
 }
 
 void Drawable::draw()

@@ -7,6 +7,7 @@
 #include "VertexBuffer.h"
 #include "Drawable.h"
 #include "InputLayout.h"
+#include "IndexBuffer.h"
 Graphics::Graphics(const Window& w)
 {
 	DXGI_SWAP_CHAIN_DESC scd = {};
@@ -41,7 +42,6 @@ Graphics::Graphics(const Window& w)
 	auto res = pDevice->CreateTexture2D(&dsd, nullptr, &pDepthTexture);
 
 	D3D11_DEPTH_STENCIL_VIEW_DESC dsdesc{ .Format = DXGI_FORMAT_D16_UNORM , .ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D};
-	dsdesc.Texture2D.MipSlice = 0;
 	
 	res = pDevice->CreateDepthStencilView(pDepthTexture.Get(),&dsdesc, &pDepthStencilView);
 
@@ -76,6 +76,7 @@ HRESULT Graphics::endFrame()
 
 void Graphics::drawTriangle()
 {
+	Drawable triangle(*this);
 	struct Vertex { float x; float y; float z; float r; float g; float b; };
 	std::vector<Vertex> vertices{
 	   {-0.5,-0.5,0.5,1,0,0},
@@ -84,52 +85,16 @@ void Graphics::drawTriangle()
 		{0,-0.5,-0.5,1,0,1},
 	};
 
-	Drawable triangle(*this);
-	
-	//VertexBuffer<Vertex> v(std::move(vertices),*this);
-	
 	triangle.addBind(std::make_unique<VertexBuffer<Vertex>>(std::move(vertices), *this));
-	//v.bind();
 
-
-
-	D3D11_BUFFER_DESC bdc{};
-	bdc.ByteWidth = static_cast<UINT>(vertices.size() * sizeof(Vertex));
-	bdc.Usage = D3D11_USAGE_DEFAULT;
-	bdc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-	bdc.StructureByteStride = static_cast<UINT>(sizeof(Vertex));
-	
-	wrl::ComPtr<ID3D11Buffer> vBuf;
-	D3D11_SUBRESOURCE_DATA sdat{};
-	sdat.pSysMem = vertices.data();
-	sdat.SysMemPitch = sizeof(Vertex);
-	//auto res = pDevice->CreateBuffer(&bdc,&sdat,&vBuf);
-
-
-	constexpr UINT stride = sizeof(Vertex);
-	constexpr UINT offset = 0;
-	//pDeviceContext->IASetVertexBuffers(0, 1, vBuf.GetAddressOf(), &stride, &offset);
-	
-
-	wrl::ComPtr<ID3D11Buffer> iBuf;
-	std::vector<int> indices =
+	std::vector<short int> indices =
 	{
 		0,1,2,
 		0,3,1,
 		2,1,3,
 		2,3,0,
 	};
-
-	bdc.ByteWidth = static_cast<UINT>(indices.size() * sizeof(int));
-	bdc.Usage = D3D11_USAGE_DEFAULT;
-	bdc.BindFlags = D3D11_BIND_INDEX_BUFFER;
-	bdc.StructureByteStride = static_cast < UINT>(sizeof(int));
-
-
-	sdat.pSysMem = indices.data();
-	sdat.SysMemPitch = sizeof(int);
-	auto res = pDevice->CreateBuffer(&bdc, &sdat, &iBuf);
-	pDeviceContext->IASetIndexBuffer(iBuf.Get(), DXGI_FORMAT_R32_UINT, 0);
+	triangle.addBind(std::make_unique<IndexBuffer>(indices, *this));
 
 	const std::vector<D3D11_INPUT_ELEMENT_DESC> idc =  // tell vshader what is in vertex buffer ?? ???  ? ?
 	{

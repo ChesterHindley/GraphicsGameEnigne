@@ -11,5 +11,6 @@ public:
 	Drawable(Graphics&);
 	void draw(); // should Bind() everything and call drawindexed
 	void addBind(std::unique_ptr<Bindable>&&);
+	
 };
 
