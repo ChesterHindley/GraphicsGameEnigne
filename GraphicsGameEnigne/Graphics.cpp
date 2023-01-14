@@ -11,7 +11,7 @@ Graphics::Graphics(const Window& w)
 {
 	DXGI_SWAP_CHAIN_DESC scd = {};
 
-	scd.BufferDesc = { 0,0, {0,0}, DXGI_FORMAT_R8G8B8A8_UNORM_SRGB,DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED,DXGI_MODE_SCALING_UNSPECIFIED };
+	scd.BufferDesc = { 0,0, {0,0}, DXGI_FORMAT_R8G8B8A8_UNORM_SRGB,DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED,DXGI_MODE_SCALING_UNSPECIFIED};
 	scd.SampleDesc = { 1,0 };
 	scd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
 	scd.Windowed = TRUE;
@@ -26,7 +26,7 @@ Graphics::Graphics(const Window& w)
 		&pSwapChain, &pDevice, nullptr, &pDeviceContext);
 
 	pSwapChain->GetBuffer(0, __uuidof(ID3D11Resource), &backBuffer);
-	pDevice->CreateRenderTargetView(backBuffer.Get(), NULL, &pRenderTargetView);
+	pDevice->CreateRenderTargetView(backBuffer.Get(), nullptr, &pRenderTargetView);
 
 
 	D3D11_DEPTH_STENCIL_DESC depthStencilDesc{ .DepthEnable = true,.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL,.DepthFunc = D3D11_COMPARISON_LESS };
@@ -35,7 +35,7 @@ Graphics::Graphics(const Window& w)
 	pDeviceContext->OMSetDepthStencilState(depthStencilState.Get(), 1);
 
 
-	D3D11_TEXTURE2D_DESC dsd{ .Width = (UINT)w.getxSize(), .Height = (UINT)w.getySize(), .MipLevels = 1, .ArraySize = 1, .Format = DXGI_FORMAT_D16_UNORM, .SampleDesc{1,0},.Usage = D3D11_USAGE_DEFAULT, .BindFlags= D3D11_BIND_DEPTH_STENCIL };
+	D3D11_TEXTURE2D_DESC dsd{ .Width = (UINT)w.getxSize()-16, .Height = (UINT)w.getySize()-55, .MipLevels = 1, .ArraySize = 1, .Format = DXGI_FORMAT_D16_UNORM, .SampleDesc{1,0},.Usage = D3D11_USAGE_DEFAULT, .BindFlags= D3D11_BIND_DEPTH_STENCIL };
 
 	wrl::ComPtr<ID3D11Texture2D> pDepthTexture;
 	auto res = pDevice->CreateTexture2D(&dsd, nullptr, &pDepthTexture);
@@ -131,36 +131,19 @@ void Graphics::drawTriangle()
 	auto res = pDevice->CreateBuffer(&bdc, &sdat, &iBuf);
 	pDeviceContext->IASetIndexBuffer(iBuf.Get(), DXGI_FORMAT_R32_UINT, 0);
 
-	triangle.addBind(std::make_unique<Shader<ID3D11VertexShader>>("..\\x64\\Debug\\VertexShader.cso", *this));
-	triangle.addBind(std::make_unique<Shader<ID3D11PixelShader>>("..\\x64\\Debug\\PixelShader.cso", *this));
-	auto sh = std::make_unique<Shader<ID3D11VertexShader>>("..\\x64\\Debug\\VertexShader.cso", *this);
-
 	const std::vector<D3D11_INPUT_ELEMENT_DESC> idc =  // tell vshader what is in vertex buffer ?? ???  ? ?
 	{
 		{"POSITION",0,DXGI_FORMAT_R32G32B32_FLOAT,0,0,D3D11_INPUT_PER_VERTEX_DATA,0},
 		{"COLOR",0,DXGI_FORMAT_R32G32B32_FLOAT,0,D3D11_APPEND_ALIGNED_ELEMENT,D3D11_INPUT_PER_VERTEX_DATA,0}
 	};
+	auto sh = std::make_unique<Shader<ID3D11VertexShader>>("..\\x64\\Debug\\VertexShader.cso", *this);
 	auto layout = std::make_unique<InputLayout>(idc, *sh, *this);
 	triangle.addBind(std::move(layout));
-	/*
-	Shader<ID3D11VertexShader> vertexShader ("..\\x64\\Debug\\VertexShader.cso",*this);
-	Shader<ID3D11PixelShader> pixelShader("..\\x64\\Debug\\PixelShader.cso",*this);
-	//res = pDevice->CreateVertexShader(vertexShader.data(), vertexShader.getSize(), nullptr, &vertexShader);
 
-	pDeviceContext->VSSetShader(vertexShader.Get(), nullptr, 0);
-
-	//res = pDevice->CreatePixelShader(pixelShader.data(), pixelShader.getSize(), nullptr, &pixelShader);
-	pDeviceContext->PSSetShader(pixelShader.Get(), nullptr, 0);
+	triangle.addBind(std::move(sh));
+	triangle.addBind(std::make_unique<Shader<ID3D11PixelShader>>("..\\x64\\Debug\\PixelShader.cso", *this));
 	
-	const D3D11_INPUT_ELEMENT_DESC idc[] =  // tell vshader what is in vertex buffer ?? ???  ? ?
-	{
-		{"POSITION",0,DXGI_FORMAT_R32G32B32_FLOAT,0,0,D3D11_INPUT_PER_VERTEX_DATA,0},
-		{"COLOR",0,DXGI_FORMAT_R32G32B32_FLOAT,0,D3D11_APPEND_ALIGNED_ELEMENT,D3D11_INPUT_PER_VERTEX_DATA,0}
-	};
-	wrl::ComPtr<ID3D11InputLayout> inputLayout;
-	res = pDevice->CreateInputLayout(idc, 2, vertexShader.data(), vertexShader.getSize(), &inputLayout);
-	pDeviceContext->IASetInputLayout(inputLayout.Get());
-	*/
+
 	triangle.draw();
 	pDeviceContext->DrawIndexed((UINT)indices.size(), 0, 0);
 

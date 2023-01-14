@@ -44,7 +44,7 @@ std::optional<int> Window::getMessages()
 	
 }
 
-Window::Window(HINSTANCE hinst, int x, int y, int xsize, int ysize)
+Window::Window(HINSTANCE hinst, int x, int y, int xsize, int ysize)		// MASSIVE TODO: AdjustWindowRect() since width and height I give are not the ones used for user space
 	: hInstance{ hinst }, x{ x }, y{ y }, xSize{ xsize }, ySize{ ysize }
 {
 	WNDCLASS wc = { };
@@ -59,5 +59,5 @@ Window::Window(HINSTANCE hinst, int x, int y, int xsize, int ysize)
 	gfx = std::make_unique<Graphics>(*this);
 
 }
-int Window::getxSize() const { return xSize; }
-int Window::getySize() const { return ySize; } 
+unsigned int Window::getxSize() const { return xSize; }
+unsigned int Window::getySize() const { return ySize; } 

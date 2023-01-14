@@ -15,13 +15,13 @@ private:
 	std::unique_ptr<Graphics> gfx;
 	
 
-
+	
 public:
 	Window(HINSTANCE hinst,int x = CW_USEDEFAULT,int y = CW_USEDEFAULT,int xsize = 900,int ysize = 900);
 	LRESULT HandleEvent(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	const HWND& gethWin() const;
 	std::optional<int> getMessages();
-	int getxSize() const;
-	int getySize() const;
+	unsigned int getxSize() const;
+	unsigned int getySize() const;
 };
 
