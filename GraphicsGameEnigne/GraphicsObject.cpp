@@ -6,7 +6,8 @@ GraphicsObject::GraphicsObject(Graphics& g) :
 	.pDevice{g.pDevice},
 	.pDeviceContext{g.pDeviceContext},
 	.pRenderTargetView{g.pRenderTargetView},
-	.pDepthStencilView{g.pDepthStencilView}
+	.pDepthStencilView{g.pDepthStencilView},
+	.graphics{g}
 	}
 {}
 

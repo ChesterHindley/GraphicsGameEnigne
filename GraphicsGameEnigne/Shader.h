@@ -4,6 +4,7 @@
 #include <vector>
 #include "Bindable.h"
 #include <tuple>
+#include <string_view>
 
 
 template <class T>
@@ -17,52 +18,52 @@ class Shader : public Bindable
 	std::size_t size;
 
 private:
-	void readShader(const std::string& fileName) {
+	void readShader(std::string_view fileName) {
 
 		std::ifstream shaderFile;
 		shaderFile.open(fileName, std::ios::binary | std::ios::in);
 
 		shaderFile.read(byteCode.data(), size);
-		shaderFile.close();
+		//shaderFile.close();
 	};
 	Shader& operator=(const Shader&) = delete;
 	Shader() = delete;
 	Shader(const Shader&) = delete;
 
 public:
-	Shader(const std::string& fileName,Graphics& g)
+	Shader(std::string_view fileName,Graphics& g)
 		:
 		Bindable(g),
 		byteCode(size = std::filesystem::file_size(fileName))  //dang how cool is this
 	{
 		readShader(fileName);
-		auto arguments = std::make_tuple(gfx.pDevice.Get(), byteCode.data(), size, nullptr, shader.GetAddressOf());
+		//auto arguments = std::make_tuple(gfx.pDevice.Get(), byteCode.data(), size, nullptr, shader.GetAddressOf()); // don't, remove this asap
 		if constexpr (std::same_as<T, ID3D11VertexShader>)
 		{
-			std::apply(&ID3D11Device::CreateVertexShader, arguments); // callable object, arguments for it
-			//gfx.pDevice->CreateVertexShader(byteCode.data(), size, nullptr, shader.GetAddressOf());
+			//std::apply(&ID3D11Device::CreateVertexShader, arguments); // callable object, arguments for it
+			gfx.pDevice->CreateVertexShader(byteCode.data(), size, nullptr, shader.GetAddressOf());
 		}
 		else if constexpr (std::same_as<T, ID3D11PixelShader>)
 		{
-			std::apply(&ID3D11Device::CreatePixelShader, arguments);
-			//gfx.pDevice->CreatePixelShader(byteCode.data(), size, nullptr, shader.GetAddressOf());
+			//std::apply(&ID3D11Device::CreatePixelShader, arguments);
+			gfx.pDevice->CreatePixelShader(byteCode.data(), size, nullptr, shader.GetAddressOf());
 		}
 
 	};
 
-	auto data() const
+	auto data() const [[obsolete]]
 	{
 		return byteCode.data();
 	};
 	
-	auto Get() 
+	auto Get() [[obsolete]]
 	{
 		return shader.Get();
 	}
 
-	auto operator&() { return &shader; }
+	auto operator&() [[obsolete]] { return &shader; }
 
-	const std::size_t& getSize() const { return size; };
+	std::size_t getSize() const { return size; };
 	
 	void bind() override 
 	{

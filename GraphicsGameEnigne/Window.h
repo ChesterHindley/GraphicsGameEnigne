@@ -1,4 +1,6 @@
 #pragma once
+#define WIN32_LEAN_AND_MEAN
+#define NOMINMAX
 #include <Windows.h>
 #include <optional>
 #include <memory>
@@ -17,11 +19,11 @@ private:
 
 	
 public:
-	Window(HINSTANCE hinst,int x = CW_USEDEFAULT,int y = CW_USEDEFAULT,int xsize = 900,int ysize = 900);
+	Window(HINSTANCE hinst,int x = 350,int y = 35,int xsize = 800,int ysize = 800);
 	LRESULT HandleEvent(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	const HWND& gethWin() const;
 	std::optional<int> getMessages();
-	unsigned int getxSize() const;
-	unsigned int getySize() const;
+	float getxSize() const;
+	float getySize() const;
 };
 

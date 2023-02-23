@@ -8,7 +8,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	if (uMsg == WM_CREATE)
 		win = static_cast<Window*>(reinterpret_cast<CREATESTRUCT*>(lParam)->lpCreateParams);
 	if (win)
-		return win->HandleEvent(hwnd, uMsg, wParam, lParam); // won't HandleEvent be problematic if DefWindowProc hasn't been done for WM_CREATE
+		return win->HandleEvent(hwnd, uMsg, wParam, lParam);
 	return DefWindowProc(hwnd, uMsg, wParam, lParam);
 }
 
@@ -44,8 +44,8 @@ std::optional<int> Window::getMessages()
 	
 }
 
-Window::Window(HINSTANCE hinst, int x, int y, int xsize, int ysize)		// MASSIVE TODO: AdjustWindowRect() since width and height I give are not the ones used for user space
-	: hInstance{ hinst }, x{ x }, y{ y }, xSize{ xsize }, ySize{ ysize }
+Window::Window(HINSTANCE hinst, int x, int y, int xsize, int ysize)	 // most likely x and y values assigned are wrong, assign at the end
+	: hInstance{ hinst }, x{ x }, y{ y }
 {
 	WNDCLASS wc = { };
 
@@ -53,11 +53,18 @@ Window::Window(HINSTANCE hinst, int x, int y, int xsize, int ysize)		// MASSIVE 
 	wc.hInstance = hInstance;
 	wc.lpszClassName = "basicWC";
 
-	RegisterClass(&wc);
-	hWin = CreateWindow("basicWC", "GraphicsGameEngine", WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU | WS_VISIBLE, x, y, xSize, ySize, NULL, NULL, hInstance, this); // last null is what i ll tinker later 
 
-	gfx = std::make_unique<Graphics>(*this);
+	RECT rect{.left = 0,.top = 0,.right = xsize, .bottom = ysize};
+	AdjustWindowRect(&rect, WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU | WS_VISIBLE, false);
+
+	RegisterClass(&wc);
+	hWin = CreateWindow("basicWC", "GraphicsGameEngine", WS_CAPTION | WS_MINIMIZEBOX | WS_SYSMENU | WS_VISIBLE, x, y, rect.right-rect.left, rect.bottom-rect.top, NULL, NULL, hInstance, this); // last null is what i ll tinker later 
+	xSize = xsize;
+	ySize = ysize;
+
+
+	gfx = std::make_unique<Graphics>(*this); // alignment problem for cbuffer because of heap allocation or sth
 
 }
-unsigned int Window::getxSize() const { return xSize; }
-unsigned int Window::getySize() const { return ySize; } 
+float Window::getxSize() const { return xSize; }
+float Window::getySize() const { return ySize; } 

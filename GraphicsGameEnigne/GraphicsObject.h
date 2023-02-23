@@ -10,6 +10,7 @@ protected:
 	Microsoft::WRL::ComPtr<ID3D11DeviceContext>& pDeviceContext;
 	Microsoft::WRL::ComPtr<ID3D11RenderTargetView>& pRenderTargetView;
 	Microsoft::WRL::ComPtr<ID3D11DepthStencilView>& pDepthStencilView;
+	Graphics& graphics;
 	}gfx;
 
 	GraphicsObject(Graphics& g);

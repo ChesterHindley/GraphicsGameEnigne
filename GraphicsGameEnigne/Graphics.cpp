@@ -1,13 +1,12 @@
 #include <vector>
+#include <DirectXMath.h>
+#include <filesystem>
 #include "Graphics.h"
 #include "Window.h"
 #pragma comment(lib,"D3D11.lib")
-#include "Shader.h"
-#include <filesystem>
-#include "VertexBuffer.h"
-#include "Drawable.h"
-#include "InputLayout.h"
-#include "IndexBuffer.h"
+#include "Triangle.h"
+
+
 Graphics::Graphics(const Window& w)
 {
 	DXGI_SWAP_CHAIN_DESC scd = {};
@@ -19,7 +18,7 @@ Graphics::Graphics(const Window& w)
 	scd.BufferCount = 1;
 	scd.OutputWindow = w.gethWin();
 	scd.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
-
+	
 	wrl::ComPtr<ID3D11Resource> backBuffer;
 
 	D3D11CreateDeviceAndSwapChain(nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr,
@@ -36,7 +35,7 @@ Graphics::Graphics(const Window& w)
 	pDeviceContext->OMSetDepthStencilState(depthStencilState.Get(), 1);
 
 
-	D3D11_TEXTURE2D_DESC dsd{ .Width = (UINT)w.getxSize()-16, .Height = (UINT)w.getySize()-55, .MipLevels = 1, .ArraySize = 1, .Format = DXGI_FORMAT_D16_UNORM, .SampleDesc{1,0},.Usage = D3D11_USAGE_DEFAULT, .BindFlags= D3D11_BIND_DEPTH_STENCIL };
+	D3D11_TEXTURE2D_DESC dsd{ .Width = (UINT)w.getxSize(), .Height = (UINT)w.getySize(), .MipLevels = 1, .ArraySize = 1, .Format = DXGI_FORMAT_D16_UNORM, .SampleDesc{1,0},.Usage = D3D11_USAGE_DEFAULT, .BindFlags= D3D11_BIND_DEPTH_STENCIL };
 
 	wrl::ComPtr<ID3D11Texture2D> pDepthTexture;
 	auto res = pDevice->CreateTexture2D(&dsd, nullptr, &pDepthTexture);
@@ -67,49 +66,17 @@ Graphics::Graphics(const Window& w)
 
 HRESULT Graphics::endFrame()
 {
-	constexpr FLOAT color[4] = { 0,0,0,1 };
+	static constexpr FLOAT color[4] = { 0,0,0,1 };
 	auto res = pSwapChain->Present(1, 0);
 	pDeviceContext->ClearDepthStencilView(pDepthStencilView.Get(), D3D11_CLEAR_DEPTH, 1, 0);
 	pDeviceContext->ClearRenderTargetView(pRenderTargetView.Get(), color);
 	return res;
 }
 
-void Graphics::drawTriangle()
+void Graphics::drawTriangle() // Actually why put everything on heap
 {
-	Drawable triangle(*this);
-	struct Vertex { float x; float y; float z; float r; float g; float b; };
-	std::vector<Vertex> vertices{
-	   {-0.5,-0.5,0.5,1,0,0},
-		{0,0.5,0,0,1,0},
-		{0.5,-0.5,0.5,0,0,1},
-		{0,-0.5,-0.5,1,0,1},
-	};
-
-	triangle.addBind(std::make_unique<VertexBuffer<Vertex>>(std::move(vertices), *this));
-
-	std::vector<short int> indices =
-	{
-		0,1,2,
-		0,3,1,
-		2,1,3,
-		2,3,0,
-	};
-	triangle.addBind(std::make_unique<IndexBuffer>(indices, *this));
-
-	const std::vector<D3D11_INPUT_ELEMENT_DESC> idc =  // tell vshader what is in vertex buffer ?? ???  ? ?
-	{
-		{"POSITION",0,DXGI_FORMAT_R32G32B32_FLOAT,0,0,D3D11_INPUT_PER_VERTEX_DATA,0},
-		{"COLOR",0,DXGI_FORMAT_R32G32B32_FLOAT,0,D3D11_APPEND_ALIGNED_ELEMENT,D3D11_INPUT_PER_VERTEX_DATA,0}
-	};
-	auto sh = std::make_unique<Shader<ID3D11VertexShader>>("..\\x64\\Debug\\VertexShader.cso", *this);
-	auto layout = std::make_unique<InputLayout>(idc, *sh, *this);
-	triangle.addBind(std::move(layout));
-
-	triangle.addBind(std::move(sh));
-	triangle.addBind(std::make_unique<Shader<ID3D11PixelShader>>("..\\x64\\Debug\\PixelShader.cso", *this));
-	
-
-	triangle.draw();
-	pDeviceContext->DrawIndexed((UINT)indices.size(), 0, 0);
+	static Triangle triangle(*this);
+	triangle.self_draw((time_point_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now()).time_since_epoch().count()));
+	pDeviceContext->DrawIndexed(static_cast<UINT>(triangle.indicesCount()), 0, 0);
 
 }

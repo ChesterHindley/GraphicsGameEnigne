@@ -1,6 +1,6 @@
 #include "Drawable.h"
 
-Drawable::Drawable(Graphics& g) : GraphicsObject(g)
+Drawable::Drawable(Graphics& g) : VScbuf(g), GraphicsObject(g)
 {
 	//huh??
 }
@@ -12,6 +12,7 @@ void Drawable::draw()
 		i->bind();
 		
 	}
+	VScbuf.bind();
 	// window draw? gfx draw? 
 }
 
@@ -20,3 +21,12 @@ void Drawable::addBind(std::unique_ptr<Bindable>&& b)
 	binds.emplace_back(std::move(b));
 
 }
+
+void Drawable::updateTransformation(const DirectX::XMFLOAT4X4& m)
+{
+	VScbuf.update(m);
+
+}
+
+
+
