@@ -51,18 +51,11 @@ public:
 
 	};
 
-	auto data() const [[obsolete]]
+	auto data() const
 	{
 		return byteCode.data();
 	};
 	
-	auto Get() [[obsolete]]
-	{
-		return shader.Get();
-	}
-
-	auto operator&() [[obsolete]] { return &shader; }
-
 	std::size_t getSize() const { return size; };
 	
 	void bind() override 

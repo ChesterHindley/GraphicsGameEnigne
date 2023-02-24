@@ -13,7 +13,8 @@ void Drawable::draw()
 		
 	}
 	VScbuf.bind();
-	// window draw? gfx draw? 
+	// window draw? gfx draw?
+	gfx.pDeviceContext->DrawIndexed(this->indicesCount(), 0, 0);
 }
 
 void Drawable::addBind(std::unique_ptr<Bindable>&& b)

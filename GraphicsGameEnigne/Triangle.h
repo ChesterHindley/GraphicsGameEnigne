@@ -8,7 +8,7 @@ class Triangle : public Drawable
 public:
 	Triangle(Graphics& g);
 	void self_draw(float t);
-	std::size_t indicesCount() const;
+	std::size_t indicesCount() const override;
 	
 };
 

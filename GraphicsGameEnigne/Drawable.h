@@ -14,7 +14,8 @@ class Drawable : public GraphicsObject // since it can be drawn it should also h
 	VSConstantBuffer VScbuf;
 	std::vector<std::unique_ptr<Bindable>> binds;
 
-
+protected:
+	virtual ~Drawable() = default;
 
 
 public:
@@ -22,7 +23,7 @@ public:
 	void draw(); // should Bind() everything and call drawindexed
 	void addBind(std::unique_ptr<Bindable>&&);
 	void updateTransformation(const DirectX::XMFLOAT4X4&);
-
+	virtual std::size_t indicesCount() const = 0;
 
 	
 };

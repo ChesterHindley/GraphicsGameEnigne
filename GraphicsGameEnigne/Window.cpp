@@ -1,5 +1,6 @@
 #include "Window.h"
 #include "Graphics.h"
+#include <string>
 
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
@@ -20,7 +21,11 @@ LRESULT Window::HandleEvent(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 	case WM_DESTROY:
 		PostQuitMessage(0);
 		return 0;
-
+	case WM_MOUSEMOVE:
+		xpos = lParam & 0xFFFF;
+		ypos = (lParam >> 16) & 0xFFFF;
+		
+		SetWindowText(hwnd, ("(" + std::to_string(xpos) + ";" + std::to_string(ypos) + ")").c_str());
 	}
 	return DefWindowProc(hwnd, uMsg, wParam, lParam);
 }

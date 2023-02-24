@@ -25,5 +25,7 @@ public:
 	std::optional<int> getMessages();
 	float getxSize() const;
 	float getySize() const;
+	int xpos;
+	int ypos;
 };
 

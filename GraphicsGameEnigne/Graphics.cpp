@@ -76,7 +76,8 @@ HRESULT Graphics::endFrame()
 void Graphics::drawTriangle() // Actually why put everything on heap
 {
 	static Triangle triangle(*this);
+	static Triangle triangle2(*this);
 	triangle.self_draw((time_point_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now()).time_since_epoch().count()));
-	pDeviceContext->DrawIndexed(static_cast<UINT>(triangle.indicesCount()), 0, 0);
+	triangle2.self_draw(time_point_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now()).time_since_epoch().count() >> 2);
 
 }
