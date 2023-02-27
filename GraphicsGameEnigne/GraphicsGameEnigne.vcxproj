@@ -139,6 +139,7 @@
     <ClCompile Include="IndexBuffer.cpp" />
     <ClCompile Include="InputLayout.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="PPMImage.cpp" />
     <ClCompile Include="Triangle.cpp" />
     <ClCompile Include="VSConstantBuffer.cpp" />
     <ClCompile Include="Window.cpp" />
@@ -151,6 +152,7 @@
     <ClInclude Include="GraphicsObject.h" />
     <ClInclude Include="IndexBuffer.h" />
     <ClInclude Include="InputLayout.h" />
+    <ClInclude Include="PPMImage.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="Triangle.h" />
     <ClInclude Include="VertexBuffer.h" />

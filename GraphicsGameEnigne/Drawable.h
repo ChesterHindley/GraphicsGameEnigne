@@ -6,16 +6,14 @@
 #include <memory>
 #include <DirectXMath.h>
 #include "VSConstantBuffer.h"
-//TODO expand this class ie transformation update etc
-class Drawable : public GraphicsObject // since it can be drawn it should also have a constant buffer with position transformation
-	// however if I am to update it I need to store it individually (or try dynamic cast on all binds)
-	// 
+class Drawable : public GraphicsObject 
 {
 	VSConstantBuffer VScbuf;
 	std::vector<std::unique_ptr<Bindable>> binds;
 
 protected:
 	virtual ~Drawable() = default;
+	std::size_t idxCount;
 
 
 public:

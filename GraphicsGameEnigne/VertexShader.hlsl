@@ -1,6 +1,6 @@
 struct Vertex
 {
-	float3 color : COLOR;
+	float2 tex: TexCoord;
 	float4 v : SV_POSITION;
 };
 
@@ -11,11 +11,11 @@ cbuffer buf
 };
 
 
-Vertex main(float3 pos : POSITION, float3 color : COLOR)
+Vertex main(float3 pos : POSITION,float2 tex: TexCoord)
 {
 	Vertex v;
 	v.v = mul(float4(pos, 1.0f), transform);
-	//v.v = float4(pos, 1.f);
-	v.color = color;
+	v.tex = tex;
+
 	return v;
 }

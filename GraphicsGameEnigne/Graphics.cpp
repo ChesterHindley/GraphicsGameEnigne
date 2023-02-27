@@ -1,10 +1,12 @@
 #include <vector>
 #include <DirectXMath.h>
 #include <filesystem>
+#include <random>
 #include "Graphics.h"
 #include "Window.h"
 #pragma comment(lib,"D3D11.lib")
 #include "Triangle.h"
+#include <array>
 
 
 Graphics::Graphics(const Window& w)
@@ -19,7 +21,7 @@ Graphics::Graphics(const Window& w)
 	scd.OutputWindow = w.gethWin();
 	scd.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
 	
-	wrl::ComPtr<ID3D11Resource> backBuffer;
+	Microsoft::WRL::ComPtr<ID3D11Resource> backBuffer;
 
 	D3D11CreateDeviceAndSwapChain(nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr,
 		D3D11_CREATE_DEVICE_DEBUG, nullptr, 0, D3D11_SDK_VERSION, &scd,
@@ -30,14 +32,14 @@ Graphics::Graphics(const Window& w)
 
 
 	D3D11_DEPTH_STENCIL_DESC depthStencilDesc{ .DepthEnable = true,.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL,.DepthFunc = D3D11_COMPARISON_LESS };
-	wrl::ComPtr<ID3D11DepthStencilState> depthStencilState;
+	Microsoft::WRL::ComPtr<ID3D11DepthStencilState> depthStencilState;
 	pDevice->CreateDepthStencilState(&depthStencilDesc, &depthStencilState);
 	pDeviceContext->OMSetDepthStencilState(depthStencilState.Get(), 1);
 
 
 	D3D11_TEXTURE2D_DESC dsd{ .Width = (UINT)w.getxSize(), .Height = (UINT)w.getySize(), .MipLevels = 1, .ArraySize = 1, .Format = DXGI_FORMAT_D16_UNORM, .SampleDesc{1,0},.Usage = D3D11_USAGE_DEFAULT, .BindFlags= D3D11_BIND_DEPTH_STENCIL };
 
-	wrl::ComPtr<ID3D11Texture2D> pDepthTexture;
+	Microsoft::WRL::ComPtr<ID3D11Texture2D> pDepthTexture;
 	auto res = pDevice->CreateTexture2D(&dsd, nullptr, &pDepthTexture);
 
 	D3D11_DEPTH_STENCIL_VIEW_DESC dsdesc{ .Format = DXGI_FORMAT_D16_UNORM , .ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D};
@@ -75,9 +77,23 @@ HRESULT Graphics::endFrame()
 
 void Graphics::drawTriangle() // Actually why put everything on heap
 {
-	static Triangle triangle(*this);
-	static Triangle triangle2(*this);
-	triangle.self_draw((time_point_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now()).time_since_epoch().count()));
-	triangle2.self_draw(time_point_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now()).time_since_epoch().count() >> 2);
 
+
+	//Triangle triangle(xydist(randengine), xydist(randengine), zdist(randengine), xydist(randengine), xydist(randengine), xydist(randengine), *this);
+	static std::array<std::unique_ptr<Triangle>, 10> triangles;
+
+	if (triangles[0] == nullptr)
+	std::ranges::generate(triangles, [this] () {
+	std::mt19937 randengine(std::random_device{}());
+	std::uniform_real_distribution<float> xydist(-2, 2);
+	std::uniform_real_distribution<float> zdist(2, 8);
+	return std::make_unique<Triangle>(xydist(randengine), xydist(randengine), zdist(randengine), xydist(randengine), xydist(randengine), xydist(randengine), *this); });
+
+	for (auto& i : triangles)
+	{
+		i.get()->self_draw(time_point_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now()).time_since_epoch().count());
+	}
 }
+
+	//triangle.self_draw((time_point_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now()).time_since_epoch().count()));
+

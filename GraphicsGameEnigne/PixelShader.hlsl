@@ -1,5 +1,8 @@
+Texture2D tex;
 
-float4 main(float3 color : COLOR) : SV_TARGET
+SamplerState s;
+
+float4 main(float2 tc :TexCoord) : SV_TARGET
 {
-	return float4(color, 1.0f);
+	return tex.Sample(s,tc);
 }
