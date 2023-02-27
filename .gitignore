@@ -364,3 +364,6 @@ FodyWeavers.xsd
 
 # IDE background picture settings
 .claudiaideconfig
+
+# testing textures
+*.ppm
