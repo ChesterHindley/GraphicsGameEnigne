@@ -44,13 +44,6 @@ std::vector<PPMImage::Pixel> PPMImage::PPMImageLoader::operator()(std::string_vi
 		unsigned long long byte_index = 0;
 		char r, g, b;
 
-
-#ifdef _DEBUG
-
-#endif // DEBUG
-
-
-		//&ret
 		test.resize((long long)height * width);
 		auto fillfn = [&byte_index, &r, &g, &b,&test](char i)
 		{

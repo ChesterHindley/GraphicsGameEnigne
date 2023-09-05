@@ -4,7 +4,6 @@
 #include <Windows.h>
 #include <optional>
 #include <memory>
-#include"Graphics.h"
 
 class Window
 {
@@ -14,7 +13,6 @@ private:
 	HWND hWin;
 	int x, y;
 	int xSize, ySize;
-	std::unique_ptr<Graphics> gfx;
 	
 
 	

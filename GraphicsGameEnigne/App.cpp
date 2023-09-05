@@ -2,8 +2,8 @@
 
 void App::doFrame()
 {
-	w.gfx.get()->endFrame();
-	w.gfx.get()->drawTriangle();
+	gfx.endFrame();
+	gfx.drawTriangle();
 
 }
 
@@ -17,6 +17,6 @@ int App::Go()
 
 }
 
-App::App(HINSTANCE hInst) :w(hInst)
+App::App(HINSTANCE hInst) :w(hInst), gfx(w)
 {
 }

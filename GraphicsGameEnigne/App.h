@@ -1,6 +1,6 @@
 #pragma once
 #include "Window.h"
-
+#include "Graphics.h"
 class App
 {
 	App(const App&) = delete;
@@ -9,6 +9,7 @@ class App
 
 private:
 	Window w;
+	Graphics gfx;
 	void doFrame();
 	
 public:

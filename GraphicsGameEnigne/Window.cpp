@@ -67,9 +67,6 @@ Window::Window(HINSTANCE hinst, int x, int y, int xsize, int ysize)	 // most lik
 	xSize = xsize;
 	ySize = ysize;
 
-
-	gfx = std::make_unique<Graphics>(*this); // alignment problem for cbuffer because of heap allocation or sth
-
 }
 float Window::getxSize() const { return xSize; }
 float Window::getySize() const { return ySize; } 
